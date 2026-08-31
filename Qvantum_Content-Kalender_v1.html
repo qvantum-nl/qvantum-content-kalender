@@ -954,6 +954,33 @@ const SEED_MATRIX_LABELS = [
   'proof-awareness',        // 69  subsidiewijzigingen 2027 — QNL LI (09-02)
   'proof-awareness',        // 70  5 grote collectieve projecten 2027 — blog (23-02)
   'perspective-awareness',  // 71  wat ik anders doe in 2027 — Viktor LI (09-03)
+
+  // === IDEEEN-POOL UIT DE UK-AUDIT (31-08-2026) ===
+  'promotion-awareness',    // 72  Aankondiging Installatie Vakdagen: waar we staan in Hardenbe
+  'promotion-awareness',    // 73  Live vanaf de Installatie Vakdagen: wat installateurs vragen
+  'perspective-education',  // 74  Terugblik Installatie Vakdagen: de drie vragen die installat
+  'proof-education',        // 75  Zo werkt het deel 1: een warmtepomp maakt geen warmte, hij v
+  'proof-education',        // 76  Zo werkt het deel 2: waarom de QE geen buitenunit nodig heef
+  'proof-education',        // 77  Zo werkt het deel 3: thermische opslag, wat een warmtepomp m
+  'proof-education',        // 78  Zo werkt het deel 4: waarom een systeem dat koelt ook een ve
+  'proof-education',        // 79  Zo werkt het deel 5: bronnet, ambient loop en ZLT, drie term
+  'proof-education',        // 80  Zo werkt het deel 6: wat prefab-ready in de praktijk beteken
+  'proof-awareness',        // 81  Kwartaalbrief editie 1 voor adviseurs, corporaties en gemeen
+  'proof-awareness',        // 82  Kwartaalbrief editie 2: wat 2027 verandert voor adviseurs, c
+  'proof-awareness',        // 83  Vakartikel delen met eigen kop: netcapaciteit of warmtetrans
+  'proof-awareness',        // 84  Vakartikel delen met eigen kop: sectorjaaroverzicht of insta
+  'promotion-awareness',    // 85  Aankondiging Klimaattop GO, Jaarbeurs Utrecht.
+  'perspective-awareness',  // 86  Standpunt vanaf de Klimaattop: wat er in de zaal wel en niet
+  'promotion-awareness',    // 87  Wie je bij Qvantum Nederland aan de lijn krijgt, en waarvoor
+  'promotion-awareness',    // 88  Achter de schermen in Astorp: waar de warmtepompen vandaan k
+  'proof-selection',        // 89  Van tekening tot oplevering: wat er misgaat als je te laat o
+  'proof-selection',        // 90  De servicekant: wat we in het eerste jaar QG uit de praktijk
+  'proof-selection',        // 91  Hoe een QE-installatie in een dag eruitziet, stap voor stap.
+  'perspective-awareness',  // 92  Stelling: we praten te veel over het toestel en te weinig ov
+  'perspective-selection',  // 93  Keuzehulp individueel of collectief: vijf vragen die de knoo
+  'promotion-awareness',    // 94  Aankondiging Green Heating Solutions, Expo Greater Amsterdam
+  'promotion-awareness',    // 95  Green Heating Solutions, Vijfhuizen: het event zelf.
+  'perspective-education',  // 96  Terugblik Green Heating Solutions met een inzicht dat je zon
 ];
 
 function matrixSplit(value) {
@@ -1313,6 +1340,33 @@ function getSeedData() {
     { datum:'2027-02-09', week:'Week 6', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Subsidiewijzigingen 2027: wat installateurs moeten weten. ISDE, SEEH en lokale regelingen.', content:'', qg:false, qe:true },
     { datum:'2027-02-23', week:'Week 8', thema:'Kennis delen', type:'Blog', kanaal:'HubSpot — Blog', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'5 grote collectieve warmteprojecten die in 2027 starten — en wat ze gemeen hebben. Sectortrend en pipeline-zicht.', content:'', qg:true, qe:false , cab:true },
     { datum:'2027-03-09', week:'Week 10', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Viktor de Haan', auteur:'Viktor de Haan', status:'Idee', omschrijving:'Wat ik anders doe in 2027: opiniestuk over de installateursmarkt. Persoonlijke visie op wat moet veranderen.', content:'', qg:false, qe:true },
+
+    // === IDEEEN-POOL UIT DE UK-AUDIT (31-08-2026) — geen datum, staan in de Ideeen-tab ===
+    { datum:'', week:'', thema:'Installatie Vakdagen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Aankondiging Installatie Vakdagen: waar we staan in Hardenberg en wat we meenemen.', content:'Voorstel: di 1 sep 2026 (week 36). Beurs is 8-10 sep 2026, Evenementenhal Hardenberg. Uit de UK-audit: elk event krijgt daar een drieluik (aankondiging / live / terugblik); dit event stond in de eventlijst zonder enige content.', qg:true, qe:true },
+    { datum:'', week:'', thema:'Installatie Vakdagen', type:'LinkedIn post', kanaal:'LinkedIn — Mark Vellinga', auteur:'Mark Vellinga', status:'Idee', omschrijving:'Live vanaf de Installatie Vakdagen: wat installateurs vragen over een warmtepomp zonder buitenunit.', content:'Voorstel: wo 9 sep 2026 (week 37), tijdens de beurs. Eerste item op het kanaal van Mark Vellinga, dat nu leegstaat.', qg:false, qe:true },
+    { datum:'', week:'', thema:'Installatie Vakdagen', type:'LinkedIn post', kanaal:'LinkedIn — Viktor de Haan', auteur:'Viktor de Haan', status:'Idee', omschrijving:'Terugblik Installatie Vakdagen: de drie vragen die installateurs het vaakst stelden, en wat dat zegt over de markt.', content:'Voorstel: vr 11 sep 2026 (week 37), kort na de beurs.', qg:false, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Zo werkt het deel 1: een warmtepomp maakt geen warmte, hij verplaatst warmte.', content:'Voorstel: do 24 sep 2026 (week 39). Start van een lichte, herhaalbare educatieserie van zes delen, ongeveer maandelijks. Overgenomen van de Did-you-know-serie die Qvantum UK in aug 2026 startte: korte posts, vaste opening, breder publiek dan de specificeerder. Vult de weken tussen de zware content.', qg:false, qe:false },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Zo werkt het deel 2: waarom de QE geen buitenunit nodig heeft, en wat dat betekent voor geluid en welstand.', content:'Voorstel: di 27 okt 2026 (week 44).', qg:false, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Zo werkt het deel 3: thermische opslag, wat een warmtepomp met buffer kan wat een ketel nooit kon.', content:'Voorstel: di 24 nov 2026 (week 48).', qg:true, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Zo werkt het deel 4: waarom een systeem dat koelt ook een verwarmingsvraagstuk oplost.', content:'Voorstel: di 29 dec 2026 (week 53). Vult de stilste week van het jaar zonder productiedruk.', qg:false, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Zo werkt het deel 5: bronnet, ambient loop en ZLT, drie termen die door elkaar lopen, in gewone taal.', content:'Voorstel: di 2 feb 2027 (week 5).', qg:true, qe:false },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Zo werkt het deel 6: wat prefab-ready in de praktijk betekent.', content:'Voorstel: di 2 mrt 2027 (week 9).', qg:false, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'Nieuwsbrief', kanaal:'HubSpot — Nieuwsbrief / email', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Kwartaalbrief editie 1 voor adviseurs, corporaties en gemeenten: netcongestie, wijkaanpak en wat er in 2027 verandert.', content:'Voorstel: do 1 okt 2026 (week 40). Overgenomen van de UK-kwartaalbrief Energy Insights (start jul 2026). Bewust los van de installateursmailing: ander publiek, ander gesprek, geen productcampagne. Bouwt een eigen publiek op dat niet van het algoritme afhangt.', qg:true, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'Nieuwsbrief', kanaal:'HubSpot — Nieuwsbrief / email', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Kwartaalbrief editie 2: wat 2027 verandert voor adviseurs, corporaties en gemeenten.', content:'Voorstel: do 7 jan 2027 (week 1). Tweede editie van de kwartaalbrief.', qg:true, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Vakartikel delen met eigen kop: netcapaciteit of warmtetransitie, onderwerp bepalen op de week zelf.', content:'Voorstel: vr 16 okt 2026 (week 42). Uit de UK-audit: vijf UK-posts zijn een vakartikel van een ander met daarboven een eigen inzicht. Geen eigen productie, wel autoriteit. Het kanaal Vakpublicaties (extern) is nu alleen eigen PR-plaatsing; amplificatie van andermans stukken ontbreekt.', qg:false, qe:false },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Vakartikel delen met eigen kop: sectorjaaroverzicht of installatiecijfers, met eigen duiding erboven.', content:'Voorstel: do 10 dec 2026 (week 50).', qg:false, qe:false },
+    { datum:'', week:'', thema:'Klimaattop GO', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Aankondiging Klimaattop GO, Jaarbeurs Utrecht.', content:'Voorstel: ma 2 nov 2026 (week 45). Event is 4-5 nov 2026. LET OP: voorwaardelijk, alleen als deelname bevestigd is. Beslissen voor half oktober. Het event staat in de eventlijst zonder enige content.', qg:false, qe:false },
+    { datum:'', week:'', thema:'Klimaattop GO', type:'LinkedIn post', kanaal:'LinkedIn — Viktor de Haan', auteur:'Viktor de Haan', status:'Idee', omschrijving:'Standpunt vanaf de Klimaattop: wat er in de zaal wel en niet wordt gezegd over de gebouwde omgeving.', content:'Voorstel: do 5 nov 2026 (week 45). Voorwaardelijk, zie het aankondigingsitem. Vult Perspectief-Awareness, met 3 van 72 items de dunste cel in de matrix.', qg:false, qe:false },
+    { datum:'', week:'', thema:'Mensen & team', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Wie je bij Qvantum Nederland aan de lijn krijgt, en waarvoor. Het team in beeld.', content:'Voorstel: di 10 nov 2026 (week 46). Uit de UK-audit: 8 van de 59 UK-posts gaan over het team, 13 procent. In de NL-kalender staat sep 2026 - mrt 2027 geen enkel item over mensen of team.', qg:false, qe:false },
+    { datum:'', week:'', thema:'Mensen & team', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Achter de schermen in Astorp: waar de warmtepompen vandaan komen.', content:'Voorstel: do 18 feb 2027 (week 7). Zweedse herkomst en Europese productie. UK zet dit sinds aug 2026 in, NL doet er niets mee.', qg:false, qe:false },
+    { datum:'', week:'', thema:'Projecten & referentiecases', type:'LinkedIn post', kanaal:'LinkedIn — Koen Pape', auteur:'Koen Pape', status:'Idee', omschrijving:'Van tekening tot oplevering: wat er misgaat als je te laat over de bron nadenkt.', content:'Voorstel: do 22 okt 2026 (week 43). Eerste item op het kanaal van Koen Pape, dat nu leegstaat.', qg:true, qe:false },
+    { datum:'', week:'', thema:'Projecten & referentiecases', type:'LinkedIn post', kanaal:'LinkedIn — Sebastiaan Rietveld', auteur:'Sebastiaan Rietveld', status:'Idee', omschrijving:'De servicekant: wat we in het eerste jaar QG uit de praktijk hebben geleerd.', content:'Voorstel: di 1 dec 2026 (week 49). Eerste item op het kanaal van Sebastiaan Rietveld, dat nu leegstaat. Service en aftersales ontbreken in beide landen volledig.', qg:true, qe:false },
+    { datum:'', week:'', thema:'QE Installer Campagne', type:'LinkedIn post', kanaal:'LinkedIn — Pascal Boy', auteur:'Pascal Boy', status:'Idee', omschrijving:'Hoe een QE-installatie in een dag eruitziet, stap voor stap.', content:'Voorstel: do 28 jan 2027 (week 4). Eerste item op het kanaal van Pascal Boy, dat nu leegstaat.', qg:false, qe:true },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Viktor de Haan', auteur:'Viktor de Haan', status:'Idee', omschrijving:'Stelling: we praten te veel over het toestel en te weinig over het systeem eromheen.', content:'Voorstel: di 19 jan 2027 (week 3). Vult Perspectief-Awareness, de dunste cel in de matrix. Dit is de rij waar Qvantum UK helemaal niets doet.', qg:false, qe:false },
+    { datum:'', week:'', thema:'Kennis delen', type:'LinkedIn post', kanaal:'LinkedIn — Viktor de Haan', auteur:'Viktor de Haan', status:'Idee', omschrijving:'Keuzehulp individueel of collectief: vijf vragen die de knoop doorhakken.', content:'Voorstel: do 11 feb 2027 (week 6). Vult Perspectief-Selectie, met 4 van 72 items de op een na dunste cel.', qg:true, qe:true },
+    { datum:'', week:'', thema:'Green Heating Solutions', type:'LinkedIn post', kanaal:'LinkedIn — Qvantum Nederland', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Aankondiging Green Heating Solutions, Expo Greater Amsterdam Vijfhuizen.', content:'Voorstel: do 11 mrt 2027 (week 10). Beurs is 16-18 mrt 2027. Staat in de eventlijst zonder enige content.', qg:true, qe:true },
+    { datum:'', week:'', thema:'Green Heating Solutions', type:'Beurs / event', kanaal:'Beurzen & events', auteur:'Qvantum NL bedrijfspagina', status:'Idee', omschrijving:'Green Heating Solutions, Vijfhuizen: het event zelf.', content:'Voorstel: di 16 mrt 2027 (week 11), loopt 16-18 mrt. Staat wel in de eventlijst, had nog geen kalenderitem.', qg:true, qe:true },
+    { datum:'', week:'', thema:'Green Heating Solutions', type:'LinkedIn post', kanaal:'LinkedIn — Viktor de Haan', auteur:'Viktor de Haan', status:'Idee', omschrijving:'Terugblik Green Heating Solutions met een inzicht dat je zonder de beurs niet had gehad.', content:'Voorstel: vr 19 mrt 2027 (week 11), kort na de beurs.', qg:false, qe:false },
   ];
 }
 
@@ -1451,27 +1505,29 @@ function migrateSeedMatrixLabels() {
 
    Backfill: for users from before this tracking existed, we mark every seed whose
    datum+omschrijving currently matches an item as "known" on first run. Only seeds
-   that are truly new to the code are appended. */
+   that are truly new to the code are appended.
+
+   The known-set lives in localStorage, so it is per browser, while items are shared
+   across the team via Firestore. That means a seed can already be present in items
+   (added by a colleague) while still being unknown to this browser. The presence
+   check below therefore runs on EVERY pass, not just the first — otherwise each
+   teammate appends their own copy of every newly added seed. */
 function migrateAddMissingSeedItems() {
   if (!Array.isArray(items)) items = [];
   const seedData = getSeedData();
   const known = getKnownSeedKeys();
-  const firstRun = known.size === 0;
   let added = 0;
   let knownChanged = false;
   seedData.forEach((s, i) => {
     const key = seedKey(s);
     if (known.has(key)) return; // already applied once, never re-add
-    if (firstRun) {
-      // Backfill: mark every seed already present in items as known without re-adding.
-      const exists = items.some(it => it.datum === s.datum && it.omschrijving === s.omschrijving);
-      known.add(key); knownChanged = true;
-      if (exists) return;
-    }
+    // Mark as known and skip when an item with this datum+omschrijving already exists.
+    const exists = items.some(it => it.datum === s.datum && it.omschrijving === s.omschrijving);
+    known.add(key); knownChanged = true;
+    if (exists) return;
     // Truly new seed (not in known set, not already in items): add it.
     const m = SEED_MATRIX_LABELS[i];
     items.push({ id: nextId++, ...s, ...(m ? { matrix: m } : {}) });
-    known.add(key); knownChanged = true;
     added++;
   });
   if (knownChanged) saveKnownSeedKeys(known);
