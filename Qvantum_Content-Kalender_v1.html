@@ -191,6 +191,7 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
 .month-btn { font-family: inherit; font-weight: 500; font-size: 0.7rem; padding: 6px 12px; border: 1px solid var(--q-beige); border-radius: 20px; background: var(--q-white); color: var(--q-off-black); cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; text-transform: uppercase; }
 .month-btn:hover { background: var(--q-beige); }
 .month-btn.active { background: var(--q-brown); color: var(--q-white); border-color: var(--q-brown); }
+.month-btn.in-range { border-color: var(--q-brown); color: var(--q-brown); background: var(--q-off-white); }
 
 .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
 .filter-select { font-family: inherit; font-size: 0.8rem; padding: 8px 14px; border: 1px solid var(--q-beige); border-radius: var(--radius); background: var(--q-white); color: var(--q-off-black); cursor: pointer; min-width: 130px; }
@@ -235,6 +236,17 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
 .day-item:hover { background: var(--q-beige); }
 .day-item .di-title { font-weight: 600; font-size: 0.75rem; line-height: 1.3; margin-bottom: 3px; }
 .day-item .di-meta { font-size: 0.65rem; color: var(--q-brown); line-height: 1.3; }
+.sync-status { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.5px; color: var(--q-brown); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.sync-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #C9C3BA; flex-shrink: 0; }
+.sync-status.ok::before { background: #4CAF50; }
+.sync-status.busy::before { background: #FF8D5A; }
+.sync-status.error::before { background: #C41230; }
+.sync-status.error { color: #C41230; }
+.link-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.link-badge { display: inline-flex; align-items: center; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px; text-decoration: none; color: #FFF; line-height: 1.4; }
+.link-badge:hover { opacity: 0.8; }
+.link-badge.hs { background: #FF8D5A; }
+.link-badge.li { background: #3164FD; }
 .day-item .di-auteur { font-weight: 600; }
 .day-item .di-status { display: inline-block; font-weight: 600; font-size: 0.55rem; letter-spacing: 0.5px; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; color: var(--q-white); margin-top: 3px; }
 .day-empty { font-size: 0.7rem; color: #C0B9B0; font-style: normal; padding: 4px 0; }
@@ -282,6 +294,10 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
 .quarter-btn { font-family: inherit; font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 5px 14px; border-radius: 16px; border: 2px solid var(--q-navy); background: none; color: var(--q-navy); cursor: pointer; transition: all 0.15s; }
 .quarter-btn:hover { background: var(--q-navy); color: var(--q-white); }
 .quarter-btn.active { background: var(--q-navy); color: var(--q-white); }
+.range-toggle { font-family: inherit; font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 5px 14px; border-radius: 16px; border: 2px solid var(--q-navy); background: none; color: var(--q-navy); cursor: pointer; transition: all 0.15s; }
+.range-toggle:hover { background: var(--q-navy); color: var(--q-white); }
+.range-toggle.active { background: var(--q-navy); color: var(--q-white); }
+.range-hint { font-size: 0.6rem; color: var(--q-brown); letter-spacing: 0.5px; margin-left: 10px; }
 
 /* FILTER CHECKBOX */
 .filter-checkbox { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; color: var(--q-brown); cursor: pointer; padding: 6px 14px; background: var(--q-white); border: 1px solid var(--q-beige); border-radius: 20px; white-space: nowrap; }
@@ -401,6 +417,7 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
       <div class="header-subtitle">Content Kalender 2026 - 2027</div>
     </div>
     <div class="header-right">
+      <span id="syncStatus" class="sync-status" title="Status van de synchronisatie met Firestore"></span>
       <div class="lang-toggle">
         <button class="lang-btn active" data-lang="nl" onclick="switchLang('nl')">NL</button>
         <button class="lang-btn" data-lang="en" onclick="switchLang('en')">EN</button>
@@ -629,6 +646,7 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
 
     <div class="form-group"><label>Content tekst (volledige post / artikel)</label><textarea id="fieldContent" rows="6" placeholder="Schrijf hier de volledige tekst van de LinkedIn post, het artikel, de nieuwsbrief etc. Dit veld is uitklapbaar in de kalenderweergave."></textarea></div>
     <div class="form-group" id="linkedinUrlGroup" style="display:none"><label>LinkedIn post URL</label><input type="url" id="fieldLinkedinUrl" placeholder="https://www.linkedin.com/feed/update/urn:li:activity:..." style="font-size:0.75rem"></div>
+    <div class="form-group"><label>HubSpot link</label><input type="url" id="fieldHubspotUrl" placeholder="https://app-eu1.hubspot.com/email/143794667/edit/... (nieuwsbrief, e-mail of social post)" style="font-size:0.75rem"><div style="font-size:0.6rem;color:var(--q-brown);margin-top:4px">Plak de link naar het item in HubSpot — ook als het daar alleen nog ingepland staat. Verschijnt als klikbare HS-badge op de kaart.</div></div>
     <div class="form-group" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label class="modal-check"><input type="checkbox" id="fieldQG"> <span>QG</span></label><label class="modal-check"><input type="checkbox" id="fieldQE"> <span>QE</span></label><label class="modal-check"><input type="checkbox" id="fieldCAB" onchange="updateNotifyButton()"> <span>CAB</span></label></div>
 
     <!-- Media Checklist -->
@@ -1067,6 +1085,7 @@ function switchLang(newLang) {
 function renderAllUI() {
   // Header
   document.querySelector('.header-subtitle').textContent = t('subtitle');
+  if (typeof buildRangeToggle === 'function') buildRangeToggle();
   // Tabs
   // Tabs: target via data-tab attribute (count-span in pool tab moet behouden blijven)
   const tabByKey = (key) => document.querySelector(`.tab-btn[data-tab="${key}"]`);
@@ -1181,24 +1200,20 @@ const _today = new Date();
 const _todayKey = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}`;
 let selectedMonth = MONTHS.find(m => m.key === _todayKey)?.key || MONTHS[0].key;
 let currentView = 'week';
-let quarterMode = null; // null = single month, or ['2026-04','2026-05','2026-06'] etc.
-let focusMode = null;  // null = month/quarter view, 'twoWeeks' = today + next ISO week
-
-function buildQuarters(months) {
-  const arr = [];
-  const nQuarters = Math.floor(months.length / 3);
-  for (let i = 0; i < nQuarters; i++) {
-    const chunk = months.slice(i * 3, (i + 1) * 3);
-    const [year, monthNum] = chunk[0].key.split('-').map(Number);
-    const qNum = Math.floor((monthNum - 1) / 3) + 1;
-    const label = `Q${qNum} ${year}`;
-    arr.push({ label, labelEn: label, months: chunk.map(m => m.key) });
-  }
-  return arr;
-}
-const QUARTERS = buildQuarters(MONTHS);
+let quarterMode = null; // null = single month, or the month keys currently in view
+let focusMode = null;  // null = month view, 'twoWeeks' = today + next ISO week
 let items = [];
 let nextId = 1;
+
+/* Collision-proof id for items created at runtime. With multiple people in the
+   calendar a shared nextId counter hands out the same id twice, which means the
+   same Firestore document and one of the two items silently disappearing.
+   A millisecond timestamp is unique per client without needing coordination. */
+function newItemId() {
+  let id = Date.now();
+  while (items.some(i => i.id === id)) id++;
+  return id;
+}
 
 /* Bridges so the Firebase module (separate script scope) can read/write our state */
 window.__getMainItems = () => items;
@@ -1453,6 +1468,8 @@ function init() {
   }
   migrateSeedMatrixLabels();
   migrateAddMissingSeedItems();
+  // Honour a persisted ± 1 maand preference before the first render
+  quarterMode = rangeMode ? monthWindow(selectedMonth) : null;
   loadPlatformOverrides(); buildMonthNav(); buildFilterOptions(); renderCalendar(); renderPlatforms(); renderEvents(); setupTabs(); initWebhookSettings();
   // Render the static 3x3 overview once
   const moBody = document.getElementById('matrixOverviewBody');
@@ -1631,43 +1648,63 @@ function activateBoardView() {
   document.getElementById('filterCAB').checked = true;
   // Switch to card view
   setView('card');
-  // Select full year quarter if not already in quarter mode
-  if (!quarterMode) selectQuarter(0);
+  // Widen to the 3-month window so the board shows more than a single month
+  if (!rangeMode) toggleRangeMode();
 }
 
-/* MONTH NAV */
+/* MONTH NAV
+   rangeMode: when on, picking a month also shows the month before and after it,
+   so the view slides with your selection instead of snapping to fixed quarters. */
+let rangeMode = localStorage.getItem('qvantum-range-mode') === '1';
+
+function monthWindow(key) {
+  const idx = MONTHS.findIndex(m => m.key === key);
+  if (idx === -1) return [key];
+  const out = [];
+  if (idx > 0) out.push(MONTHS[idx - 1].key);
+  out.push(key);
+  if (idx < MONTHS.length - 1) out.push(MONTHS[idx + 1].key);
+  return out;
+}
+
 function buildMonthNav() {
-  document.getElementById('monthNav').innerHTML = MONTHS.map(m =>
-    `<button class="month-btn ${!quarterMode && m.key === selectedMonth ? 'active' : ''}" onclick="selectMonth('${m.key}')">${m.label}</button>`
-  ).join('');
-  buildQuarterNav();
+  const windowKeys = rangeMode ? monthWindow(selectedMonth) : [selectedMonth];
+  document.getElementById('monthNav').innerHTML = MONTHS.map(m => {
+    let cls = 'month-btn';
+    if (m.key === selectedMonth) cls += ' active';
+    else if (rangeMode && windowKeys.includes(m.key)) cls += ' in-range';
+    return `<button class="${cls}" onclick="selectMonth('${m.key}')">${m.label}</button>`;
+  }).join('');
+  buildRangeToggle();
 }
-function buildQuarterNav() {
-  document.getElementById('quarterNav').innerHTML = QUARTERS.map(q =>
-    `<button class="quarter-btn ${quarterMode && quarterMode === q.months ? 'active' : ''}" onclick="selectQuarter(${QUARTERS.indexOf(q)})">${q.label}</button>`
-  ).join('');
+
+function buildRangeToggle() {
+  const label = lang === 'en' ? '± 1 month' : '± 1 maand';
+  const hint = rangeMode
+    ? (lang === 'en' ? 'Showing the selected month plus the one before and after' : 'Toont de gekozen maand plus de maand ervoor en erna')
+    : (lang === 'en' ? 'Show three months around your selection' : 'Toon drie maanden rond je selectie');
+  document.getElementById('quarterNav').innerHTML =
+    `<button class="range-toggle ${rangeMode ? 'active' : ''}" onclick="toggleRangeMode()">${label}</button>` +
+    `<span class="range-hint">${hint}</span>`;
 }
+
+function applyMonthSelection() {
+  quarterMode = rangeMode ? monthWindow(selectedMonth) : null;
+  buildMonthNav();
+  renderCalendar();
+}
+
 function selectMonth(key) {
-  quarterMode = null;
   selectedMonth = key;
   if (focusMode) { focusMode = null; updateFocusButtonState(); }
-  buildMonthNav();
-  renderCalendar();
+  applyMonthSelection();
 }
-function selectQuarter(idx) {
-  const q = QUARTERS[idx];
+
+function toggleRangeMode() {
+  rangeMode = !rangeMode;
+  localStorage.setItem('qvantum-range-mode', rangeMode ? '1' : '0');
   if (focusMode) { focusMode = null; updateFocusButtonState(); }
-  if (quarterMode === q.months) {
-    // Deselect quarter, go back to first month of that quarter
-    quarterMode = null;
-    selectedMonth = q.months[0];
-    buildMonthNav();
-    renderCalendar();
-    return;
-  }
-  quarterMode = q.months;
-  buildMonthNav();
-  renderCalendar();
+  applyMonthSelection();
 }
 
 /* FILTERS */
@@ -2007,6 +2044,7 @@ function renderWeekBlocks(weeks, itemsByDate) {
               <div class="di-title" onclick="openModal(${item.id})">${esc(truncate(item.omschrijving || item.thema, 60))}</div>
               <div class="di-meta"><span class="di-auteur">${esc(item.thema)}</span> &middot; ${esc(item.type)} ${matrixBadgeHtml(item.matrix)}</div>
               <div class="di-status ${sc}">${esc(tStatus(item.status))}</div>
+              ${linkBadgesHtml(item)}
               ${item.media && item.media.length > 0 ? `<div class="media-tags">${item.media.slice(0,3).map(m => `<span class="media-tag${PLATFORMS.find(p=>p.naam===m)?.relevantie==='hoog'?' hoog':''}">${esc(m)}</span>`).join('')}${item.media.length > 3 ? `<span class="media-tag">+${item.media.length - 3}</span>` : ''}</div>` : ''}
               <div class="di-content-toggle" onclick="toggleDayContent(event, ${item.id})">${hasContent ? t('showText') : t('writeText')} &#9662;</div>
               <div class="di-content" id="dc-${item.id}">
@@ -2021,6 +2059,15 @@ function renderWeekBlocks(weeks, itemsByDate) {
     html += `</div></div>`;
   });
   return html;
+}
+
+/* Clickable badges linking straight to the item in HubSpot / LinkedIn.
+   stopPropagation so clicking a badge opens the link instead of the edit modal. */
+function linkBadgesHtml(item) {
+  const badges = [];
+  if (item.hubspotUrl) badges.push(`<a class="link-badge hs" href="${esc(item.hubspotUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Open in HubSpot">HS</a>`);
+  if (item.linkedinUrl) badges.push(`<a class="link-badge li" href="${esc(item.linkedinUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" title="Open op LinkedIn">LI</a>`);
+  return badges.length ? `<div class="link-badges">${badges.join('')}</div>` : '';
 }
 
 /* CARD VIEW */
@@ -2067,6 +2114,7 @@ function renderCardItem(item) {
         <span class="tag">${esc(item.auteur)}</span>
         ${matrixBadgeHtml(item.matrix)}
       </div>
+      ${linkBadgesHtml(item)}
       ${item.media && item.media.length > 0 ? `<div class="media-tags">${item.media.slice(0,4).map(m => `<span class="media-tag${PLATFORMS.find(p=>p.naam===m)?.relevantie==='hoog'?' hoog':''}">${esc(m)}</span>`).join('')}${item.media.length > 4 ? `<span class="media-tag">+${item.media.length - 4}</span>` : ''}</div>` : ''}
       <div class="item-content-toggle" onclick="toggleCardContent(event, ${item.id})">${hasContent ? t('showText') : t('writeText')} &#9662;</div>
       <div class="item-content-area" id="cc-${item.id}">
@@ -2338,6 +2386,7 @@ function openModal(id) {
     document.getElementById('fieldQE').checked = !!item.qe;
     document.getElementById('fieldCAB').checked = !!item.cab;
     document.getElementById('fieldLinkedinUrl').value = item.linkedinUrl || '';
+    document.getElementById('fieldHubspotUrl').value = item.hubspotUrl || '';
     toggleLinkedinUrlField();
     // Load case study data if present
     if (item.caseStudy) {
@@ -2395,6 +2444,7 @@ function openModal(id) {
     document.getElementById('fieldQE').checked = false;
     document.getElementById('fieldCAB').checked = false;
     document.getElementById('fieldLinkedinUrl').value = '';
+    document.getElementById('fieldHubspotUrl').value = '';
     toggleLinkedinUrlField();
     clearCaseStudyFields();
     buildMediaChecklist();
@@ -2439,6 +2489,7 @@ function saveItem() {
     qe: document.getElementById('fieldQE').checked,
     cab: document.getElementById('fieldCAB').checked,
     linkedinUrl: document.getElementById('fieldLinkedinUrl').value.trim(),
+    hubspotUrl: document.getElementById('fieldHubspotUrl').value.trim(),
     media: getSelectedMedia(),
     matrix: matrixVal || undefined,
   };
@@ -2492,7 +2543,7 @@ function saveItem() {
     const idx = items.findIndex(i => i.id === parseInt(editId));
     if (idx !== -1) items[idx] = { ...items[idx], ...data };
   } else {
-    itemId = nextId++;
+    itemId = newItemId();
     items.push({ id: itemId, ...data });
   }
   saveToStorage(); closeModal(); refreshThemaFilter(); renderCalendar(); renderPool();
@@ -2977,6 +3028,10 @@ function buildTeamsCard(notifType, itemData) {
     body.push({ type: 'TextBlock', text: '[\ud83d\udd17 ' + (isCab ? 'View on LinkedIn' : 'Bekijk op LinkedIn') + '](' + d.linkedinUrl + ')', wrap: true, color: 'Accent' });
   }
 
+  if (d.hubspotUrl) {
+    body.push({ type: 'TextBlock', text: '[\ud83d\udd17 ' + (isCab ? 'View in HubSpot' : 'Bekijk in HubSpot') + '](' + d.hubspotUrl + ')', wrap: true, color: 'Accent' });
+  }
+
   if (calUrl) {
     body.push({ type: 'TextBlock', text: '[\ud83d\udcc6 ' + (isCab ? 'View in Content Calendar' : 'Bekijk in Content Kalender') + '](' + calUrl + ')', wrap: true, size: 'Small' });
   }
@@ -3088,6 +3143,7 @@ function getModalItemData() {
     qg: document.getElementById('fieldQG').checked,
     qe: document.getElementById('fieldQE').checked,
     linkedinUrl: document.getElementById('fieldLinkedinUrl').value.trim(),
+    hubspotUrl: document.getElementById('fieldHubspotUrl').value.trim(),
   };
 }
 
@@ -3432,11 +3488,12 @@ function importHubSpotSync(event) {
           existing.datum = src.datum || existing.datum;
           if (src.content) existing.content = src.content;
           if (src.linkedinUrl) existing.linkedinUrl = src.linkedinUrl;
+          if (src.hubspotUrl) existing.hubspotUrl = src.hubspotUrl;
           if (src.omschrijving && !existing.omschrijving) existing.omschrijving = src.omschrijving;
           updated++;
         } else {
           items.push({
-            id: nextId++,
+            id: newItemId(),
             datum: src.datum,
             week: src.week || '',
             thema: src.thema || 'LinkedIn',
@@ -3447,6 +3504,7 @@ function importHubSpotSync(event) {
             omschrijving: src.omschrijving || '',
             content: src.content || '',
             linkedinUrl: src.linkedinUrl || '',
+            hubspotUrl: src.hubspotUrl || '',
             qg: !!src.qg, qe: !!src.qe, cab: !!src.cab,
             hubspotId: src.hubspotId,
           });
@@ -3483,7 +3541,7 @@ setTimeout(() => {
 <!-- Set the module-loaded flag from a plain script so the fallback timer only fires when the module truly failed to fetch. -->
 <script>window.__firebaseModuleLoaded = true;</script>
 <script type="module">
-const [{ initializeApp }, { getAuth, signInAnonymously }, { getFirestore, collection, doc, getDocs, setDoc, onSnapshot, writeBatch }] = await Promise.all([
+const [{ initializeApp }, { getAuth, signInAnonymously }, { initializeFirestore, collection, doc, getDocs, setDoc, onSnapshot, writeBatch }] = await Promise.all([
   import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"),
   import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"),
   import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"),
@@ -3505,9 +3563,14 @@ const META_DOC = ['meta', 'counter'];
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+// ignoreUndefinedProperties: item fields like `matrix` are set to undefined when
+// left blank, and Firestore rejects undefined with invalid-argument — which would
+// silently fail the write for every item without a matrix cell.
+const db = initializeFirestore(app, { ignoreUndefinedProperties: true });
 
-let remoteIds = new Set();
+let lastSynced = new Map();       // doc id -> JSON as last seen in Firestore
+let pendingSnapshot = null;       // remote state held back while a modal is open
+let pendingFlushTimer = null;
 
 const gate = document.getElementById('authGate');
 const gateInput = document.getElementById('gatePassword');
@@ -3524,7 +3587,7 @@ async function loadInitial() {
   setStatus('Kalender laden…');
   const snap = await getDocs(collection(db, ITEMS_COLLECTION));
   const loadedItems = [];
-  snap.forEach(d => { loadedItems.push(d.data()); remoteIds.add(d.id); });
+  snap.forEach(d => loadedItems.push(d.data()));
   let firebaseNextId = 1;
   try {
     const counterSnap = await getDocs(collection(db, 'meta'));
@@ -3540,7 +3603,7 @@ async function loadInitial() {
         if (Array.isArray(d.items) && d.items.length > 0) {
           setStatus('Eenmalige migratie van lokale data naar Firestore…');
           const batch = writeBatch(db);
-          d.items.forEach(item => { batch.set(doc(db, ITEMS_COLLECTION, String(item.id)), item); remoteIds.add(String(item.id)); });
+          d.items.forEach(item => batch.set(doc(db, ITEMS_COLLECTION, String(item.id)), item));
           batch.set(doc(db, ...META_DOC), { value: d.nextId || 1 });
           await batch.commit();
           loadedItems.push(...d.items);
@@ -3552,40 +3615,128 @@ async function loadInitial() {
 
   window.__firebaseData = { items: loadedItems, nextId: Math.max(firebaseNextId, ...loadedItems.map(i => (i.id || 0) + 1), 1) };
 
-  // Real-time listener: on remote changes, rebuild items and re-render (skip if modal open to protect in-flight edits)
+  adoptRemote(loadedItems);
+
+  // Real-time listener. Own writes are skipped; remote changes are applied, or
+  // buffered when a modal is open so an in-flight edit isn't wiped mid-typing.
   onSnapshot(collection(db, ITEMS_COLLECTION), (snap) => {
     if (snap.metadata.hasPendingWrites) return;
     if (!window.__initAppCalled) return; // wait until main script is ready
-    const modalOpen = document.getElementById('modalOverlay')?.classList.contains('active');
-    if (modalOpen) return;
     const fresh = [];
-    remoteIds.clear();
-    snap.forEach(d => { fresh.push(d.data()); remoteIds.add(d.id); });
-    const current = window.__getMainItems ? window.__getMainItems() : [];
-    if (JSON.stringify(current) === JSON.stringify(fresh)) return;
-    window.__setMainItems(fresh);
-    if (typeof window.renderCalendar === 'function') window.renderCalendar();
-    if (typeof window.renderPool === 'function') window.renderPool();
+    snap.forEach(d => fresh.push(d.data()));
+    applyRemote(fresh);
   });
 
   window.__initApp();
   setStatus('');
+  setSyncStatus('ok', 'Gesynct');
 }
 
-// Expose sync for main-script saveToStorage
+/* --- Sync engine -------------------------------------------------------- */
+
+/* Canonical JSON: Firestore hands object keys back alphabetically while local
+   objects keep insertion order, so a plain stringify reports identical items as
+   different — which would rewrite them on every save and show phantom
+   "updated by teammate" notices. Sorting keys makes the comparison meaningful. */
+function serializeItem(item) {
+  return JSON.stringify(item, (key, value) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return Object.keys(value).sort().reduce((acc, k) => { acc[k] = value[k]; return acc; }, {});
+    }
+    return value;
+  });
+}
+
+/* Records what Firestore currently holds, so a later save can tell which items
+   this client actually changed instead of blindly rewriting the whole set. */
+function adoptRemote(list) {
+  lastSynced = new Map(list.map(i => [String(i.id), serializeItem(i)]));
+}
+
+function modalIsOpen() {
+  return !!document.getElementById('modalOverlay')?.classList.contains('active');
+}
+
+function applyRemote(fresh) {
+  if (modalIsOpen()) {
+    // Hold on to it rather than dropping it — Firestore won't resend on its own.
+    pendingSnapshot = fresh;
+    schedulePendingFlush();
+    return;
+  }
+  pendingSnapshot = null;
+  adoptRemote(fresh);
+  const current = window.__getMainItems ? window.__getMainItems() : [];
+  // Compare by id so Firestore's document order doesn't read as a change
+  const fingerprint = list => JSON.stringify(
+    list.slice().sort((a, b) => String(a.id).localeCompare(String(b.id))).map(serializeItem)
+  );
+  if (fingerprint(current) === fingerprint(fresh)) return;
+  window.__setMainItems(fresh);
+  if (typeof window.renderCalendar === 'function') window.renderCalendar();
+  if (typeof window.renderPool === 'function') window.renderPool();
+  setSyncStatus('ok', 'Bijgewerkt door teamlid');
+}
+
+function schedulePendingFlush() {
+  if (pendingFlushTimer) return;
+  pendingFlushTimer = setInterval(() => {
+    if (modalIsOpen()) return;
+    clearInterval(pendingFlushTimer);
+    pendingFlushTimer = null;
+    if (pendingSnapshot) {
+      const queued = pendingSnapshot;
+      pendingSnapshot = null;
+      applyRemote(queued);
+    }
+  }, 600);
+}
+
+function setSyncStatus(state, msg) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  const time = new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  el.className = 'sync-status ' + (state === 'saving' ? 'busy' : state);
+  if (state === 'saving') el.textContent = 'Opslaan…';
+  else if (state === 'error') el.textContent = 'Niet opgeslagen — ' + (msg || 'fout');
+  else el.textContent = (msg || 'Gesynct') + ' ' + time;
+}
+
+/* Writes only what changed since the last known Firestore state. Two people
+   editing different items never overwrite each other; a stale client can no
+   longer revert a colleague's edit or resurrect an item they deleted. */
 window.__qvantumFirestoreSync = async (items, nextId) => {
+  setSyncStatus('saving');
   try {
-    const currentIds = new Set(items.map(i => String(i.id)));
-    const toDelete = [...remoteIds].filter(id => !currentIds.has(id));
     const batch = writeBatch(db);
-    items.forEach(item => batch.set(doc(db, ITEMS_COLLECTION, String(item.id)), item));
-    toDelete.forEach(id => batch.delete(doc(db, ITEMS_COLLECTION, id)));
+    const seen = new Set();
+    let ops = 0;
+
+    items.forEach(item => {
+      const id = String(item.id);
+      seen.add(id);
+      const json = serializeItem(item);
+      if (lastSynced.get(id) !== json) {
+        batch.set(doc(db, ITEMS_COLLECTION, id), item);
+        ops++;
+      }
+    });
+
+    // Delete only what this client had and then removed itself.
+    const removed = [...lastSynced.keys()].filter(id => !seen.has(id));
+    removed.forEach(id => { batch.delete(doc(db, ITEMS_COLLECTION, id)); ops++; });
+
+    if (ops === 0) { setSyncStatus('ok', 'Gesynct'); return; }
+
     batch.set(doc(db, ...META_DOC), { value: nextId });
     await batch.commit();
-    toDelete.forEach(id => remoteIds.delete(id));
-    currentIds.forEach(id => remoteIds.add(id));
+
+    items.forEach(item => lastSynced.set(String(item.id), serializeItem(item)));
+    removed.forEach(id => lastSynced.delete(id));
+    setSyncStatus('ok', 'Opgeslagen');
   } catch (e) {
     console.error('Firestore sync mislukt:', e);
+    setSyncStatus('error', e.code || e.message || 'onbekende fout');
   }
 };
 
