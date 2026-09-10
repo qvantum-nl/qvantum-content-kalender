@@ -185,7 +185,10 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
 .lang-btn.active { background: var(--q-white); color: var(--q-off-black); }
 
 /* CONTROLS */
-.calendar-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+/* Sticky so switching months stays possible once the view scrolls to one.
+   Sticks on .calendar-controls rather than .nav-rows: a sticky element only
+   stays put within its own parent's box, and .nav-rows' parent scrolls away. */
+.calendar-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; position: sticky; top: -20px; z-index: 20; background: var(--q-off-white); padding: 12px 0 8px; }
 .controls-right { display: flex; align-items: center; gap: 10px; }
 .month-nav { display: flex; gap: 4px; flex-wrap: wrap; }
 .month-btn { font-family: inherit; font-weight: 500; font-size: 0.7rem; padding: 6px 12px; border: 1px solid var(--q-beige); border-radius: 20px; background: var(--q-white); color: var(--q-off-black); cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; text-transform: uppercase; }
@@ -290,14 +293,6 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
 
 /* QUARTER NAV */
 .nav-rows { display: flex; flex-direction: column; gap: 6px; }
-.quarter-nav { display: flex; gap: 6px; flex-wrap: wrap; }
-.quarter-btn { font-family: inherit; font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 5px 14px; border-radius: 16px; border: 2px solid var(--q-navy); background: none; color: var(--q-navy); cursor: pointer; transition: all 0.15s; }
-.quarter-btn:hover { background: var(--q-navy); color: var(--q-white); }
-.quarter-btn.active { background: var(--q-navy); color: var(--q-white); }
-.range-toggle { font-family: inherit; font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; padding: 5px 14px; border-radius: 16px; border: 2px solid var(--q-navy); background: none; color: var(--q-navy); cursor: pointer; transition: all 0.15s; }
-.range-toggle:hover { background: var(--q-navy); color: var(--q-white); }
-.range-toggle.active { background: var(--q-navy); color: var(--q-white); }
-.range-hint { font-size: 0.6rem; color: var(--q-brown); letter-spacing: 0.5px; margin-left: 10px; }
 
 /* FILTER CHECKBOX */
 .filter-checkbox { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; color: var(--q-brown); cursor: pointer; padding: 6px 14px; background: var(--q-white); border: 1px solid var(--q-beige); border-radius: 20px; white-space: nowrap; }
@@ -445,7 +440,6 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
       <div class="stats-row" id="statsRow"></div>
       <div class="calendar-controls">
         <div class="nav-rows">
-          <div class="quarter-nav" id="quarterNav"></div>
           <div class="month-nav" id="monthNav"></div>
         </div>
         <div class="controls-right">
@@ -1085,7 +1079,6 @@ function switchLang(newLang) {
 function renderAllUI() {
   // Header
   document.querySelector('.header-subtitle').textContent = t('subtitle');
-  if (typeof buildRangeToggle === 'function') buildRangeToggle();
   // Tabs
   // Tabs: target via data-tab attribute (count-span in pool tab moet behouden blijven)
   const tabByKey = (key) => document.querySelector(`.tab-btn[data-tab="${key}"]`);
@@ -1469,11 +1462,13 @@ function init() {
   migrateSeedMatrixLabels();
   migrateAddMissingSeedItems();
   // Honour a persisted ± 1 maand preference before the first render
-  quarterMode = rangeMode ? monthWindow(selectedMonth) : null;
+  quarterMode = monthWindow(selectedMonth);
   loadPlatformOverrides(); buildMonthNav(); buildFilterOptions(); renderCalendar(); renderPlatforms(); renderEvents(); setupTabs(); initWebhookSettings();
   // Render the static 3x3 overview once
   const moBody = document.getElementById('matrixOverviewBody');
   if (moBody) moBody.innerHTML = buildMatrixOverviewHtml();
+  // Open on the current month, not the one before it
+  scrollToSelectedMonth();
 }
 
 /* Stable key for each seed item, independent of user edits. Used to track which
@@ -1648,15 +1643,11 @@ function activateBoardView() {
   document.getElementById('filterCAB').checked = true;
   // Switch to card view
   setView('card');
-  // Widen to the 3-month window so the board shows more than a single month
-  if (!rangeMode) toggleRangeMode();
 }
 
 /* MONTH NAV
-   rangeMode: when on, picking a month also shows the month before and after it,
-   so the view slides with your selection instead of snapping to fixed quarters. */
-let rangeMode = localStorage.getItem('qvantum-range-mode') === '1';
-
+   The calendar always shows the selected month plus the one before and after,
+   so you can scroll across the boundary without changing selection. */
 function monthWindow(key) {
   const idx = MONTHS.findIndex(m => m.key === key);
   if (idx === -1) return [key];
@@ -1668,28 +1659,17 @@ function monthWindow(key) {
 }
 
 function buildMonthNav() {
-  const windowKeys = rangeMode ? monthWindow(selectedMonth) : [selectedMonth];
+  const windowKeys = monthWindow(selectedMonth);
   document.getElementById('monthNav').innerHTML = MONTHS.map(m => {
     let cls = 'month-btn';
     if (m.key === selectedMonth) cls += ' active';
-    else if (rangeMode && windowKeys.includes(m.key)) cls += ' in-range';
+    else if (windowKeys.includes(m.key)) cls += ' in-range';
     return `<button class="${cls}" onclick="selectMonth('${m.key}')">${m.label}</button>`;
   }).join('');
-  buildRangeToggle();
-}
-
-function buildRangeToggle() {
-  const label = lang === 'en' ? '± 1 month' : '± 1 maand';
-  const hint = rangeMode
-    ? (lang === 'en' ? 'Showing the selected month plus the one before and after' : 'Toont de gekozen maand plus de maand ervoor en erna')
-    : (lang === 'en' ? 'Show three months around your selection' : 'Toon drie maanden rond je selectie');
-  document.getElementById('quarterNav').innerHTML =
-    `<button class="range-toggle ${rangeMode ? 'active' : ''}" onclick="toggleRangeMode()">${label}</button>` +
-    `<span class="range-hint">${hint}</span>`;
 }
 
 function applyMonthSelection() {
-  quarterMode = rangeMode ? monthWindow(selectedMonth) : null;
+  quarterMode = monthWindow(selectedMonth);
   buildMonthNav();
   renderCalendar();
 }
@@ -1698,13 +1678,27 @@ function selectMonth(key) {
   selectedMonth = key;
   if (focusMode) { focusMode = null; updateFocusButtonState(); }
   applyMonthSelection();
+  scrollToSelectedMonth();
 }
 
-function toggleRangeMode() {
-  rangeMode = !rangeMode;
-  localStorage.setItem('qvantum-range-mode', rangeMode ? '1' : '0');
-  if (focusMode) { focusMode = null; updateFocusButtonState(); }
-  applyMonthSelection();
+/* The window starts at the previous month, so land on the month that was
+   actually clicked instead of the one above it. The page scrolls inside <main>,
+   not the window, and scrollIntoView is unreliable right after a re-render
+   shrinks the content (the browser clamps scrollTop first), so position the
+   container explicitly. */
+function scrollToSelectedMonth() {
+  const anchor = document.getElementById('month-anchor-' + selectedMonth);
+  if (!anchor) return;
+  const scroller = anchor.closest('main') || document.scrollingElement;
+  const sticky = document.querySelector('.calendar-controls');
+  const stickyHeight = sticky ? sticky.getBoundingClientRect().height : 0;
+  const top = scroller.scrollTop
+    + anchor.getBoundingClientRect().top
+    - scroller.getBoundingClientRect().top
+    - stickyHeight;
+  // Assigned directly rather than via scrollTo({behavior:'smooth'}), which is
+  // silently ignored on this container in some browsers.
+  scroller.scrollTop = Math.max(0, top);
 }
 
 /* FILTERS */
@@ -1936,9 +1930,8 @@ function renderStats() {
   // Exclude archived items from totals — they're inspiration, not active work
   const active = items.filter(i => i.status !== 'Gearchiveerd');
   const archivedCount = items.length - active.length;
-  const mi = quarterMode
-    ? active.filter(i => quarterMode.some(m => i.datum.startsWith(m)))
-    : active.filter(i => i.datum.startsWith(selectedMonth));
+  // Count the selected month only — the view spans three, but "deze maand" shouldn't
+  const mi = active.filter(i => i.datum.startsWith(selectedMonth));
   const stats = [
     { v: active.length, l: t('total') }, { v: mi.length, l: t('thisMonth') },
     { v: mi.filter(i => i.status === 'Idee').length, l: tStatus('Idee') },
@@ -1988,7 +1981,7 @@ function renderWeekView(container, filtered) {
     const weeks = getWeeksInMonth(year, month);
     if (quarterMode) {
       const monthLabel = new Date(year, month - 1, 1).toLocaleDateString(loc, { month: 'long', year: 'numeric' });
-      html += `<div class="quarter-month-header">${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</div>`;
+      html += `<div class="quarter-month-header" id="month-anchor-${mk}">${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</div>`;
     }
     html += renderWeekBlocks(weeks, itemsByDate);
   });
@@ -2086,7 +2079,7 @@ function renderCardView(container, filtered, opts) {
     Object.keys(grouped).sort().forEach(m => {
       const monthDate = new Date(m + '-01');
       const monthLabel = monthDate.toLocaleDateString(loc, { month: 'long', year: 'numeric' });
-      html += `<div class="quarter-month-header">${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</div>`;
+      html += `<div class="quarter-month-header" id="month-anchor-${m}">${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</div>`;
       html += `<div class="calendar-grid">${grouped[m].map(item => renderCardItem(item)).join('')}</div>`;
     });
     container.innerHTML = html;
@@ -2429,7 +2422,8 @@ function openModal(id) {
     const pad = n => String(n).padStart(2, '0');
     const todayISO = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
     const todayMonth = todayISO.slice(0, 7);
-    const defaultDate = (quarterMode || todayMonth === selectedMonth) ? todayISO : (selectedMonth + '-01');
+    // Today only makes sense as a default when today is actually in view
+    const defaultDate = todayMonth === selectedMonth ? todayISO : (selectedMonth + '-01');
     document.getElementById('fieldDatum').value = defaultDate;
     document.getElementById('fieldWeek').value = '';
     document.getElementById('fieldThema').value = '';
