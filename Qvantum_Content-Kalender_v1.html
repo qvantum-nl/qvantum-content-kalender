@@ -3737,6 +3737,9 @@ function applyRemote(fresh) {
   );
   if (fingerprint(current) === fingerprint(fresh)) return;
   window.__setMainItems(fresh);
+  // The first snapshot lands before init()'s debounced save and would otherwise
+  // drop the end-date backfill; re-run it so it gets written to Firestore.
+  if (typeof window.migrateEventEndDates === 'function') window.migrateEventEndDates();
   if (typeof window.renderCalendar === 'function') window.renderCalendar();
   if (typeof window.renderPool === 'function') window.renderPool();
   setSyncStatus('ok', 'Bijgewerkt door teamlid');
