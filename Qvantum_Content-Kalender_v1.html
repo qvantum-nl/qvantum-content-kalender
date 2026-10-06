@@ -3530,9 +3530,29 @@ function importJSON(event) {
   reader.readAsText(file); event.target.value = '';
 }
 
-/* HUBSPOT SYNC — merge published LinkedIn posts from sync-hubspot.py output.
-   Matches on item.hubspotId so re-runs never create duplicates. Existing
-   manual items (no hubspotId) are left untouched. */
+/* HUBSPOT / LINKEDIN SYNC — merge published LinkedIn posts from sync-hubspot.py
+   or sync-linkedin.py output. Matching order, so re-runs never create duplicates
+   and planned items get linked instead of duplicated:
+   1. item.hubspotId (stable id from an earlier sync)
+   2. a LinkedIn URL the user pasted by hand (compared on the numeric post id)
+   3. exactly one planned item on the same day + channel without a URL yet
+   Anything else becomes a new published item. */
+function linkedinPostKey(url) {
+  if (!url) return '';
+  const m = String(url).match(/(\d{15,})/);
+  return m ? m[1] : String(url).trim().replace(/\/+$/, '').toLowerCase();
+}
+function findSyncTarget(src) {
+  const byId = items.find(i => i.hubspotId && i.hubspotId === src.hubspotId);
+  if (byId) return { item: byId, how: 'id' };
+  const keys = [linkedinPostKey(src.linkedinUrl), linkedinPostKey(src.hubspotId)].filter(Boolean);
+  const byUrl = items.find(i => i.linkedinUrl && keys.includes(linkedinPostKey(i.linkedinUrl)));
+  if (byUrl) return { item: byUrl, how: 'url' };
+  const planned = items.filter(i => i.datum === src.datum && i.kanaal === src.kanaal
+    && !i.hubspotId && !i.linkedinUrl && i.status !== 'Gearchiveerd' && i.status !== 'Gepubliceerd');
+  if (planned.length === 1) return { item: planned[0], how: 'planned' };
+  return null;
+}
 function importHubSpotSync(event) {
   const file = event.target.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -3543,18 +3563,21 @@ function importHubSpotSync(event) {
       if (!Array.isArray(incoming) || incoming.length === 0) {
         alert('Geen items gevonden in het sync-bestand.'); event.target.value = ''; return;
       }
-      let updated = 0, added = 0;
+      let updated = 0, linked = 0, added = 0;
       incoming.forEach(src => {
         if (!src.hubspotId) return; // skip anything without a stable HubSpot id
-        const existing = items.find(i => i.hubspotId === src.hubspotId);
-        if (existing) {
+        const match = findSyncTarget(src);
+        if (match) {
+          const existing = match.item;
           existing.status = 'Gepubliceerd';
           existing.datum = src.datum || existing.datum;
-          if (src.content) existing.content = src.content;
-          if (src.linkedinUrl) existing.linkedinUrl = src.linkedinUrl;
+          existing.hubspotId = src.hubspotId;
+          // Never overwrite text the team wrote; only fill in what is missing
+          if (src.content && !existing.content) existing.content = src.content;
+          if (src.linkedinUrl && !existing.linkedinUrl) existing.linkedinUrl = src.linkedinUrl;
           if (src.hubspotUrl) existing.hubspotUrl = src.hubspotUrl;
           if (src.omschrijving && !existing.omschrijving) existing.omschrijving = src.omschrijving;
-          updated++;
+          if (match.how === 'id') updated++; else linked++;
         } else {
           items.push({
             id: newItemId(),
@@ -3576,7 +3599,7 @@ function importHubSpotSync(event) {
         }
       });
       saveToStorage(); refreshThemaFilter(); renderCalendar();
-      alert(`HubSpot sync klaar:\n${updated} item(s) bijgewerkt naar Gepubliceerd\n${added} nieuw item(s) toegevoegd`);
+      alert(`Sync klaar:\n${linked} gepland item(s) gekoppeld aan een gepubliceerde post\n${updated} eerder gesynct item(s) bijgewerkt\n${added} nieuw item(s) toegevoegd`);
     } catch(err) { alert('Fout bij HubSpot sync: ' + err.message); }
   };
   reader.readAsText(file); event.target.value = '';
