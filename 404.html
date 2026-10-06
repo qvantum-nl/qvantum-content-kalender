@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qvantum Content Kalender</title>
+    <style>
+      :root {
+        --q-brown: #91877A;
+        --q-off-black: #232222;
+        --q-off-white: #F4F4F4;
+        --q-beige: #E5E6DF;
+        --q-navy: #002656;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: Arial, Helvetica, sans-serif;
+        background: var(--q-off-white);
+        color: var(--q-off-black);
+      }
+      .card {
+        max-width: 620px;
+        width: calc(100% - 32px);
+        background: #fff;
+        border-radius: 16px;
+        padding: 32px 28px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        text-align: center;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--q-brown);
+        margin-bottom: 12px;
+        font-weight: 700;
+      }
+      h1 {
+        font-size: clamp(1.8rem, 3vw, 2.4rem);
+        margin: 0 0 16px;
+        font-weight: 600;
+      }
+      p {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0 0 18px;
+        color: #444;
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 22px;
+        border-radius: 999px;
+        background: var(--q-navy);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+        margin-top: 8px;
+      }
+      .btn:hover {
+        opacity: 0.95;
+      }
+      .muted {
+        font-size: 0.8rem;
+        color: var(--q-brown);
+        margin-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="eyebrow">Qvantum Content Kalender</div>
+      <h1>De kalender is niet beschikbaar</h1>
+      <p>De pagina die je zoekt is momenteel niet beschikbaar op deze URL.</p>
+      <p>Controleer of de juiste pagina is gepubliceerd of probeer de repository opnieuw te laden.</p>
+      <a class="btn" href="./Qvantum_Content-Kalender_v1.html">Open de kalender</a>
+      <div class="muted">Wanneer de pagina niet meer bestaat, is de repository of het GitHub Pages-bestand mogelijk aangepast.</div>
+    </main>
+  </body>
+</html>
