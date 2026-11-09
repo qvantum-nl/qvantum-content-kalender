@@ -787,7 +787,8 @@ const T = {
     footerRight: 'Data in LocalStorage + JSON export. Deel via GitHub Pages of Netlify Drop. Migratie naar HubSpot Marketing Calendar.',
     // Days
     days: ['Ma','Di','Wo','Do','Vr','Za','Zo'],
-    qgOnly: 'Alleen QG',
+    qgOnly: 'Alleen QG', qeOnly: 'Alleen QE', allProducts: 'Alle producten',
+    boardViewTitle: 'Board View: CAB + Engels + Kaarten',
   },
   en: {
     subtitle: 'Content Calendar 2026 - 2027',
@@ -853,7 +854,8 @@ const T = {
     footerRight: 'Data in LocalStorage + JSON export. Share via GitHub Pages or Netlify Drop. Future migration to HubSpot Marketing Calendar.',
     // Days
     days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    qgOnly: 'QG only',
+    qgOnly: 'QG only', qeOnly: 'QE only', allProducts: 'All products',
+    boardViewTitle: 'Board View: CAB + English + Cards',
   }
 };
 
@@ -1171,6 +1173,14 @@ function renderAllUI() {
   // Rebuild matrix selects so labels follow the active language
   buildMatrixSelectOptions();
   buildMatrixFilterOptions();
+  // Product filter, month buttons and Board View tooltip
+  {
+    const pSel = document.getElementById('filterProduct');
+    if (pSel) { pSel.options[0].text = t('allProducts'); pSel.options[1].text = t('qgOnly'); pSel.options[2].text = t('qeOnly'); }
+    const bv = document.getElementById('btnBoardView');
+    if (bv) bv.title = t('boardViewTitle');
+    buildMonthNav();
+  }
   // Theme, type, channel and author labels follow the language (values stay Dutch)
   refreshThemaFilter();
   relabelSelect('filterKanaal', 'kanaal'); relabelSelect('filterAuteur', 'auteur'); relabelSelect('filterType', 'type');
@@ -1255,11 +1265,16 @@ function buildMonths() {
   for (let i = -6; i < 12; i++) {
     const d = new Date(now.getFullYear(), qStartMonth + i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    arr.push({ key, label: `${labels[d.getMonth()]} ${d.getFullYear()}` });
+    arr.push({ key, month: d.getMonth(), year: d.getFullYear(), label: `${labels[d.getMonth()]} ${d.getFullYear()}` });
   }
   return arr;
 }
 const MONTHS = buildMonths();
+const MONTH_ABBR = {
+  nl: ['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'],
+  en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+};
+function monthLabel(m) { return (MONTH_ABBR[lang] || MONTH_ABBR.nl)[m.month] + ' ' + m.year; }
 const KANALEN = ['LinkedIn — Viktor de Haan','LinkedIn — Qvantum Nederland','LinkedIn — Mark Vellinga','LinkedIn — Koen Pape','LinkedIn — Pascal Boy','LinkedIn — Sebastiaan Rietveld','HubSpot — Nieuwsbrief / email','HubSpot — Blog','Vakpublicaties (extern)','Beurzen & events','Website qvantum.com'];
 const DAY_NAMES = ['Zo','Ma','Di','Wo','Do','Vr','Za'];
 const DAY_NAMES_FULL = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
@@ -1773,7 +1788,7 @@ function buildMonthNav() {
     let cls = 'month-btn';
     if (m.key === selectedMonth) cls += ' active';
     else if (windowKeys.includes(m.key)) cls += ' in-range';
-    return `<button class="${cls}" onclick="selectMonth('${m.key}')">${m.label}</button>`;
+    return `<button class="${cls}" onclick="selectMonth('${m.key}')">${monthLabel(m)}</button>`;
   }).join('');
 }
 
