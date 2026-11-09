@@ -183,6 +183,9 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
 .lang-toggle { display: flex; gap: 2px; background: var(--q-beige); border-radius: 20px; padding: 2px; }
 .lang-btn { font-family: inherit; font-weight: 600; font-size: 0.65rem; padding: 4px 10px; border: none; border-radius: 16px; cursor: pointer; background: none; color: var(--q-brown); transition: all 0.15s; letter-spacing: 0.5px; }
 .lang-btn.active { background: var(--q-white); color: var(--q-off-black); }
+.nl-flag { display: inline-block; font-size: 0.55rem; font-weight: 600; letter-spacing: 0.5px; padding: 1px 5px; margin-left: 6px; border-radius: 8px; background: var(--q-beige); color: var(--q-brown); vertical-align: middle; }
+.en-hint { font-size: 0.65rem; color: var(--q-brown); margin-top: 4px; line-height: 1.4; }
+.en-hint.stale { color: #C41230; }
 
 /* CONTROLS */
 /* Sticky so switching months stays possible once the view scrolls to one.
@@ -610,6 +613,7 @@ body { font-family: 'Host Grotesk', Arial, Helvetica, sans-serif; font-weight: 4
       </div>
     </div>
     <div class="form-group"><label>Korte omschrijving</label><textarea id="fieldOmschrijving" rows="2" placeholder="Waar gaat dit item over?"></textarea></div>
+    <div class="form-group"><label>Engelse omschrijving (EN-weergave en CAB)</label><textarea id="fieldOmschrijvingEn" rows="2" placeholder="Leeg laten = Nederlandse tekst met NL-label in de Engelse weergave"></textarea><div class="en-hint" id="omschrijvingEnHint"></div></div>
 
     <!-- CASE STUDY TEMPLATE -->
     <div id="caseStudyPanel" style="display:none; background: var(--q-off-white); border: 1px solid var(--q-beige); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px;">
@@ -736,10 +740,13 @@ const T = {
     modalNew: 'Nieuw content item', modalEdit: 'Item bewerken',
     lblDate: 'Datum', lblEndDate: 'Einddatum (meerdaags event)', lblWeek: 'Week (optioneel)', lblTheme: 'Thema / campagne',
     lblType: 'Type activiteit', lblChannel: 'Kanaal', lblAuthor: 'Auteur / account',
-    lblStatus: 'Status', lblDesc: 'Korte omschrijving', lblContent: 'Content tekst (volledige post / artikel)',
+    lblStatus: 'Status', lblDesc: 'Korte omschrijving', lblDescEn: 'Engelse omschrijving (EN-weergave en CAB)', lblContent: 'Content tekst (volledige post / artikel)',
     lblMatrix: 'Matrix-cel', phMatrix: 'Kies een cel (optioneel)',
     phWeek: 'bijv. Week 14', phTheme: 'bijv. QG Launch, Energieplanologie',
     phDesc: 'Waar gaat dit item over?',
+    phDescEn: 'Leeg laten = Nederlandse tekst met NL-label in de Engelse weergave',
+    enStale: 'De Nederlandse omschrijving is gewijzigd sinds deze vertaling. Werk de Engelse tekst bij; opslaan bevestigt hem.',
+    noTheme: '(geen thema)', ideaOne: 'idee', ideaMany: 'ideeën', nlFlagTitle: 'Nog geen Engelse versie',
     phContent: 'Schrijf hier de volledige tekst van de LinkedIn post, het artikel, de nieuwsbrief etc.',
     btnDelete: 'Verwijderen', btnArchive: 'Archiveer', btnCancel: 'Annuleren', btnSave: 'Opslaan',
     focusOn: 'Focus: 2 weken', focusOff: 'Volledig overzicht',
@@ -799,10 +806,13 @@ const T = {
     modalNew: 'New content item', modalEdit: 'Edit item',
     lblDate: 'Date', lblEndDate: 'End date (multi-day event)', lblWeek: 'Week (optional)', lblTheme: 'Theme / campaign',
     lblType: 'Activity type', lblChannel: 'Channel', lblAuthor: 'Author / account',
-    lblStatus: 'Status', lblDesc: 'Short description', lblContent: 'Content text (full post / article)',
+    lblStatus: 'Status', lblDesc: 'Short description', lblDescEn: 'English description (EN view and CAB)', lblContent: 'Content text (full post / article)',
     lblMatrix: 'Matrix cell', phMatrix: 'Choose a cell (optional)',
     phWeek: 'e.g. Week 14', phTheme: 'e.g. QG Launch, Energy Planning',
     phDesc: 'What is this item about?',
+    phDescEn: 'Leave empty = Dutch text with an NL label in the English view',
+    enStale: 'The Dutch description changed after this translation. Update the English text; saving confirms it.',
+    noTheme: '(no theme)', ideaOne: 'idea', ideaMany: 'ideas', nlFlagTitle: 'No English version yet',
     phContent: 'Write the full text of the LinkedIn post, article, newsletter etc. here.',
     btnDelete: 'Delete', btnArchive: 'Archive', btnCancel: 'Cancel', btnSave: 'Save',
     focusOn: 'Focus: 2 weeks', focusOff: 'Full overview',
@@ -854,6 +864,56 @@ const STATUS_LABELS = {
 
 function t(key) { return T[lang][key] || T['nl'][key] || key; }
 function tStatus(s) { return (STATUS_LABELS[lang] && STATUS_LABELS[lang][s]) || s; }
+
+/* ITEM CONTENT IN ENGLISH
+   The stored values stay Dutch (filters, sync scripts and Todoist rely on them).
+   Fixed vocabularies (theme, type, channel, author) are translated through VALUE_EN.
+   The free-text description has its own English field per item: omschrijvingEn,
+   with omschrijvingEnBron = the Dutch text it was translated from. When the Dutch
+   text changes afterwards the translation counts as stale and the card falls back
+   to Dutch with an NL label, so the English view never shows an outdated line. */
+const VALUE_EN = {
+  thema: {
+    'Kennis delen': 'Knowledge sharing', 'QG Launch': 'QG launch', 'QE Installer Campagne': 'QE installer campaign',
+    'Projecten & referentiecases': 'Projects & reference cases', 'Connectiviteit & EMS': 'Connectivity & EMS',
+    'Mensen & team': 'People & team', 'Vakbeurs Energie': 'Vakbeurs Energie (trade show)',
+    'Het Blok — Net5': 'Het Blok — Net5 (TV show)', 'Installatie Vakdagen': 'Installatie Vakdagen (trade show)',
+  },
+  type: {
+    'Rondetafel': 'Roundtable', 'Artikel': 'Article', 'Nieuwsbrief': 'Newsletter', 'Beurs / event': 'Trade show / event',
+    'Vakpublicatie': 'Trade publication',
+  },
+  kanaal: {
+    'LinkedIn — Qvantum Nederland': 'LinkedIn — Qvantum Netherlands', 'HubSpot — Nieuwsbrief / email': 'HubSpot — Newsletter / email',
+    'Vakpublicaties (extern)': 'Trade publications (external)', 'Beurzen & events': 'Trade shows & events',
+  },
+  auteur: { 'Qvantum NL bedrijfspagina': 'Qvantum NL company page' },
+};
+function tv(kind, value, lng) {
+  if ((lng || lang) !== 'en' || !value) return value || '';
+  return (VALUE_EN[kind] && VALUE_EN[kind][value]) || value;
+}
+function hasFreshEn(item) {
+  return !!(item && item.omschrijvingEn && item.omschrijvingEn.trim() && item.omschrijvingEnBron === item.omschrijving);
+}
+function itemTitle(item, lng) {
+  const l = lng || lang;
+  if (l === 'en' && hasFreshEn(item)) return item.omschrijvingEn;
+  return item.omschrijving || tv('thema', item.thema, l);
+}
+function nlFlagHtml(item) {
+  return (lang === 'en' && item.omschrijving && !hasFreshEn(item))
+    ? ' <span class="nl-flag" title="' + esc(t('nlFlagTitle')) + '">NL</span>' : '';
+}
+/* Option labels follow the language; option values stay Dutch. */
+function relabelSelect(id, kind) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  for (let i = 0; i < sel.options.length; i++) {
+    const v = sel.options[i].value;
+    if (v && !v.startsWith('__')) sel.options[i].text = tv(kind, v);
+  }
+}
 
 /* CONTENT MATRIX (Ideal Customer-Led Content Matrix — Douwe Wester)
    Single source of truth: change these three objects to rename rows, swap colors,
@@ -1111,6 +1171,11 @@ function renderAllUI() {
   // Rebuild matrix selects so labels follow the active language
   buildMatrixSelectOptions();
   buildMatrixFilterOptions();
+  // Theme, type, channel and author labels follow the language (values stay Dutch)
+  refreshThemaFilter();
+  relabelSelect('filterKanaal', 'kanaal'); relabelSelect('filterAuteur', 'auteur'); relabelSelect('filterType', 'type');
+  relabelSelect('fieldKanaal', 'kanaal'); relabelSelect('fieldAuteur', 'auteur'); relabelSelect('fieldType', 'type');
+  if (typeof renderPool === 'function') renderPool();
   // Rebuild calendar so matrix badge tooltips reflect the active language
   if (typeof renderCalendar === 'function') renderCalendar();
   // Status options in filter
@@ -1138,6 +1203,7 @@ function renderAllUI() {
       'Thema / campagne':'lblTheme','Theme / campaign':'lblTheme', 'Type activiteit':'lblType','Activity type':'lblType',
       'Kanaal':'lblChannel','Channel':'lblChannel', 'Auteur / account':'lblAuthor','Author / account':'lblAuthor',
       'Status':'lblStatus', 'Korte omschrijving':'lblDesc','Short description':'lblDesc',
+      'Engelse omschrijving (EN-weergave en CAB)':'lblDescEn','English description (EN view and CAB)':'lblDescEn',
       'Content tekst (volledige post / artikel)':'lblContent','Content text (full post / article)':'lblContent',
       'Matrix-cel':'lblMatrix','Matrix cell':'lblMatrix' };
     const key = map[lbl.textContent];
@@ -1146,6 +1212,7 @@ function renderAllUI() {
   document.getElementById('fieldWeek').placeholder = t('phWeek');
   document.getElementById('fieldThema').placeholder = t('phTheme');
   document.getElementById('fieldOmschrijving').placeholder = t('phDesc');
+  document.getElementById('fieldOmschrijvingEn').placeholder = t('phDescEn');
   document.getElementById('fieldContent').placeholder = t('phContent');
   document.getElementById('btnDelete').textContent = t('btnDelete');
   const btnArc = document.getElementById('btnArchive');
@@ -1793,8 +1860,9 @@ function buildMatrixFilterOptions() {
 function refreshThemaFilter() {
   const tSel = document.getElementById('filterThema');
   const cv = tSel.value;
-  tSel.innerHTML = '<option value="">Alle thema\'s</option>';
-  [...new Set(items.map(i => i.thema))].sort().forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; tSel.appendChild(o); });
+  tSel.innerHTML = '<option value=""></option>';
+  tSel.options[0].text = t('allThemes');
+  [...new Set(items.map(i => i.thema))].sort().forEach(th => { const o = document.createElement('option'); o.value = th; o.textContent = tv('thema', th); tSel.appendChild(o); });
   tSel.value = cv;
 }
 
@@ -1885,7 +1953,7 @@ function renderPool() {
   // Groepeer op thema
   const groups = {};
   pool.forEach(item => {
-    const key = item.thema || '(geen thema)';
+    const key = item.thema || '';
     if (!groups[key]) groups[key] = [];
     groups[key].push(item);
   });
@@ -1896,18 +1964,18 @@ function renderPool() {
     const arr = groups[thema];
     html += `<div class="pool-theme-group">
       <div class="pool-theme-header">
-        <h3>${esc(thema)}</h3>
-        <span class="pool-theme-count">${arr.length} idee${arr.length === 1 ? '' : 'en'}</span>
+        <h3>${esc(thema ? tv('thema', thema) : t('noTheme'))}</h3>
+        <span class="pool-theme-count">${arr.length} ${arr.length === 1 ? t('ideaOne') : t('ideaMany')}</span>
       </div>
       <div class="pool-grid">`;
     arr.forEach(item => {
       const tc = TYPE_COLORS[item.type] || '#91877A';
       html += `<div class="pool-card" style="border-left-color:${tc}" onclick="openModal(${item.id})">
-        <div class="pc-type">${esc(item.type || '')}</div>
-        <div class="pc-title">${esc(item.omschrijving || item.thema)}</div>
+        <div class="pc-type">${esc(tv('type', item.type))}</div>
+        <div class="pc-title">${esc(itemTitle(item))}${nlFlagHtml(item)}</div>
         <div class="pc-meta">
-          ${item.kanaal ? `<span class="pc-tag">${esc(item.kanaal)}</span>` : ''}
-          ${item.auteur ? `<span class="pc-tag">${esc(item.auteur)}</span>` : ''}
+          ${item.kanaal ? `<span class="pc-tag">${esc(tv('kanaal', item.kanaal))}</span>` : ''}
+          ${item.auteur ? `<span class="pc-tag">${esc(tv('auteur', item.auteur))}</span>` : ''}
           ${item.qg ? '<span class="pc-tag">QG</span>' : ''}
           ${item.qe ? '<span class="pc-tag">QE</span>' : ''}
           ${item.cab ? '<span class="pc-tag">CAB</span>' : ''}
@@ -2043,7 +2111,7 @@ function renderEventBars(week, spanItems) {
     });
     if (s === -1) return;
     const cls = (item.datum < fmt(week[s]) ? ' cont-left' : '') + (item.eindDatum > fmt(week[e]) ? ' cont-right' : '') + (item.status === 'Gearchiveerd' ? ' is-archived' : '');
-    const title = item.omschrijving || item.thema;
+    const title = itemTitle(item);
     bars += `<div class="event-bar${cls}" style="grid-column:${s + 1} / ${e + 2}" onclick="openModal(${item.id})" title="${esc(title)}"><span class="eb-title">${esc(title)}</span><span class="eb-dates">${formatDateRange(item.datum, item.eindDatum)}</span></div>`;
   });
   return bars ? `<div class="week-events">${bars}</div>` : '';
@@ -2089,14 +2157,14 @@ function renderWeekBlocks(weeks, itemsByDate, spanItems) {
           if (isWeekend) {
             // Compact weekend item
             html += `<div class="day-item${item.status === 'Gearchiveerd' ? ' is-archived' : ''}" style="border-left-color:${tc}">
-              <div class="di-title" onclick="openModal(${item.id})">${esc(truncate(item.omschrijving || item.thema, 35))}</div>
+              <div class="di-title" onclick="openModal(${item.id})">${esc(truncate(itemTitle(item), 35))}${nlFlagHtml(item)}</div>
               <div class="di-status ${sc}">${esc(tStatus(item.status))}</div>
               ${matrixBadgeHtml(item.matrix)}
             </div>`;
           } else {
             html += `<div class="day-item${item.status === 'Gearchiveerd' ? ' is-archived' : ''}" style="border-left-color:${tc}">
-              <div class="di-title" onclick="openModal(${item.id})">${esc(truncate(item.omschrijving || item.thema, 60))}</div>
-              <div class="di-meta"><span class="di-auteur">${esc(item.thema)}</span> &middot; ${esc(item.type)} ${matrixBadgeHtml(item.matrix)}</div>
+              <div class="di-title" onclick="openModal(${item.id})">${esc(truncate(itemTitle(item), 60))}${nlFlagHtml(item)}</div>
+              <div class="di-meta"><span class="di-auteur">${esc(tv('thema', item.thema))}</span> &middot; ${esc(tv('type', item.type))} ${matrixBadgeHtml(item.matrix)}</div>
               <div class="di-status ${sc}">${esc(tStatus(item.status))}</div>
               ${linkBadgesHtml(item)}
               ${item.media && item.media.length > 0 ? `<div class="media-tags">${item.media.slice(0,3).map(m => `<span class="media-tag${PLATFORMS.find(p=>p.naam===m)?.relevantie==='hoog'?' hoog':''}">${esc(m)}</span>`).join('')}${item.media.length > 3 ? `<span class="media-tag">+${item.media.length - 3}</span>` : ''}</div>` : ''}
@@ -2161,11 +2229,11 @@ function renderCardItem(item) {
         <span class="item-date">${ds}${item.week ? ' &middot; ' + item.week : ''}</span>
         <span class="item-status ${sc}">${tStatus(item.status)}</span>
       </div>
-      <div class="item-title" onclick="openModal(${item.id})"><span class="type-badge" style="background:${tc}"></span> ${esc(item.omschrijving || item.thema)}</div>
+      <div class="item-title" onclick="openModal(${item.id})"><span class="type-badge" style="background:${tc}"></span> ${esc(itemTitle(item))}${nlFlagHtml(item)}</div>
       <div class="item-meta">
-        <span class="tag">${esc(item.thema)}</span>
-        <span class="tag">${esc(item.type)}</span>
-        <span class="tag">${esc(item.auteur)}</span>
+        <span class="tag">${esc(tv('thema', item.thema))}</span>
+        <span class="tag">${esc(tv('type', item.type))}</span>
+        <span class="tag">${esc(tv('auteur', item.auteur))}</span>
         ${matrixBadgeHtml(item.matrix)}
       </div>
       ${linkBadgesHtml(item)}
@@ -2440,6 +2508,13 @@ function openModal(id) {
     document.getElementById('fieldAuteur').value = item.auteur;
     document.getElementById('fieldStatus').value = item.status;
     document.getElementById('fieldOmschrijving').value = item.omschrijving;
+    document.getElementById('fieldOmschrijvingEn').value = item.omschrijvingEn || '';
+    {
+      const stale = !!(item.omschrijvingEn && item.omschrijvingEn.trim()) && !hasFreshEn(item);
+      const hint = document.getElementById('omschrijvingEnHint');
+      hint.textContent = stale ? t('enStale') : '';
+      hint.className = 'en-hint' + (stale ? ' stale' : '');
+    }
     document.getElementById('fieldContent').value = item.content || '';
     document.getElementById('fieldQG').checked = !!item.qg;
     document.getElementById('fieldQE').checked = !!item.qe;
@@ -2500,6 +2575,8 @@ function openModal(id) {
     document.getElementById('fieldAuteur').value = 'Viktor de Haan';
     document.getElementById('fieldStatus').value = 'Idee';
     document.getElementById('fieldOmschrijving').value = '';
+    document.getElementById('fieldOmschrijvingEn').value = '';
+    document.getElementById('omschrijvingEnHint').textContent = '';
     document.getElementById('fieldContent').value = '';
     document.getElementById('fieldQG').checked = false;
     document.getElementById('fieldQE').checked = false;
@@ -2579,6 +2656,18 @@ function saveItem() {
       partners: document.getElementById('csPartners').value,
       hashtags: document.getElementById('csHashtags').value,
     };
+  }
+  // English description: remember which Dutch text it belongs to. Changing only the
+  // Dutch text leaves the old source in place, which marks the translation as stale.
+  {
+    const enVal = document.getElementById('fieldOmschrijvingEn').value.trim();
+    const prev = editId ? items.find(i => i.id === parseInt(editId)) : null;
+    const nlChanged = !!prev && (prev.omschrijving || '') !== data.omschrijving;
+    const enChanged = !prev || enVal !== (prev.omschrijvingEn || '').trim();
+    data.omschrijvingEn = enVal;
+    if (!enVal) data.omschrijvingEnBron = '';
+    else if (nlChanged && !enChanged) data.omschrijvingEnBron = prev.omschrijvingEnBron || '';
+    else data.omschrijvingEnBron = data.omschrijving;
   }
   // End date only applies to multi-day events, and must fall after the start date
   if (data.type !== 'Beurs / event' || !data.datum || data.eindDatum <= data.datum) data.eindDatum = '';
@@ -3051,6 +3140,7 @@ function buildTeamsCard(notifType, itemData) {
   const d = itemData;
   const isCab = notifType === 'cab';
   const locale = isCab ? 'en-GB' : 'nl-NL';
+  const cardLang = isCab ? 'en' : 'nl';
   const dateFormatted = d.datum ? new Date(d.datum).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
   const producten = [d.qg ? 'QG' : '', d.qe ? 'QE' : ''].filter(Boolean).join(', ') || (isCab ? 'General' : 'Algemeen');
   const calUrl = getCalendarUrl();
@@ -3076,15 +3166,15 @@ function buildTeamsCard(notifType, itemData) {
 
   const body = [
     { type: 'TextBlock', size: 'Medium', weight: 'Bolder', text: t.icon + ' ' + t.title, color: t.color },
-    { type: 'TextBlock', text: d.omschrijving, wrap: true, weight: 'Bolder', size: 'Small' },
+    { type: 'TextBlock', text: (isCab && d.omschrijvingEn) ? d.omschrijvingEn : d.omschrijving, wrap: true, weight: 'Bolder', size: 'Small' },
     { type: 'FactSet', facts: [
-      { title: lbl.theme, value: d.thema },
-      { title: lbl.type, value: d.type },
+      { title: lbl.theme, value: tv('thema', d.thema, cardLang) },
+      { title: lbl.type, value: tv('type', d.type, cardLang) },
       { title: lbl.date, value: dateFormatted },
-      { title: lbl.channel, value: d.kanaal },
+      { title: lbl.channel, value: tv('kanaal', d.kanaal, cardLang) },
       { title: lbl.product, value: producten },
-      { title: lbl.status, value: d.status },
-      { title: lbl.author, value: d.auteur },
+      { title: lbl.status, value: (isCab && STATUS_LABELS.en[d.status]) || d.status },
+      { title: lbl.author, value: tv('auteur', d.auteur, cardLang) },
     ]},
   ];
 
@@ -3204,6 +3294,7 @@ function getModalItemData() {
     auteur: document.getElementById('fieldAuteur').value,
     status: document.getElementById('fieldStatus').value,
     omschrijving: document.getElementById('fieldOmschrijving').value,
+    omschrijvingEn: document.getElementById('fieldOmschrijvingEn').value.trim(),
     qg: document.getElementById('fieldQG').checked,
     qe: document.getElementById('fieldQE').checked,
     linkedinUrl: document.getElementById('fieldLinkedinUrl').value.trim(),
